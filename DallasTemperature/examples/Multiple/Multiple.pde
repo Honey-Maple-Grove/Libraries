@@ -1,9 +1,9 @@
 // Include the libraries we need
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
-// Data wire is plugged into port 2 on the Arduino
-#define ONE_WIRE_BUS 2
+// Data wire is plugged into port 4 on the Arduino
+#include <DallasTemperature.h>
+#include <OneWire.h>
+#define ONE_WIRE_BUS 4
 #define TEMPERATURE_PRECISION 9
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
@@ -22,10 +22,51 @@ DeviceAddress insideThermometer, outsideThermometer;
 // DeviceAddress insideThermometer = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
 // DeviceAddress outsideThermometer   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
 
+
+// function to print a device address
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    // zero pad the address if necessary
+    if (deviceAddress[i] < 16) Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+  }
+}
+
+// function to print the temperature for a device
+void printTemperature(DeviceAddress deviceAddress)
+{
+  float tempC = sensors.getTempC(deviceAddress);
+  Serial.print("Temp C: ");
+  Serial.print(tempC);
+  Serial.print(" Temp F: ");
+  Serial.print(DallasTemperature::toFahrenheit(tempC));
+}
+
+// function to print a device's resolution
+void printResolution(DeviceAddress deviceAddress)
+{
+  Serial.print("Resolution: ");
+  Serial.print(sensors.getResolution(deviceAddress));
+  Serial.println();
+}
+
+// main function to print information about a device
+void printData(DeviceAddress deviceAddress)
+{
+  Serial.print("Device Address: ");
+  printAddress(deviceAddress);
+  Serial.print(" ");
+  printTemperature(deviceAddress);
+  Serial.println();
+}
+
+
 void setup(void)
 {
   // start serial port
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Dallas Temperature IC Control Library Demo");
 
   // Start up the library
@@ -86,48 +127,8 @@ void setup(void)
   Serial.print(sensors.getResolution(outsideThermometer), DEC);
   Serial.println();
 }
-
-// function to print a device address
-void printAddress(DeviceAddress deviceAddress)
-{
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    // zero pad the address if necessary
-    if (deviceAddress[i] < 16) Serial.print("0");
-    Serial.print(deviceAddress[i], HEX);
-  }
-}
-
-// function to print the temperature for a device
-void printTemperature(DeviceAddress deviceAddress)
-{
-  float tempC = sensors.getTempC(deviceAddress);
-  Serial.print("Temp C: ");
-  Serial.print(tempC);
-  Serial.print(" Temp F: ");
-  Serial.print(DallasTemperature::toFahrenheit(tempC));
-}
-
-// function to print a device's resolution
-void printResolution(DeviceAddress deviceAddress)
-{
-  Serial.print("Resolution: ");
-  Serial.print(sensors.getResolution(deviceAddress));
-  Serial.println();
-}
-
-// main function to print information about a device
-void printData(DeviceAddress deviceAddress)
-{
-  Serial.print("Device Address: ");
-  printAddress(deviceAddress);
-  Serial.print(" ");
-  printTemperature(deviceAddress);
-  Serial.println();
-}
-
 /*
-   Main function, calls the temperatures in a loop.
+Main function, calls the temperatures in a loop.
 */
 void loop(void)
 {
